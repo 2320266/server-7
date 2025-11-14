@@ -13,21 +13,30 @@ app.post('/api/pokemons', async (c) => {
   const record =JSON.parse(body.record);
   console.log(record);
 
-  const id = await getNextId();
-  record.id = id;
-  record.createAt = new Date().toISOString();
+  // const id = await getNextId();
+  // record.id = id;
+  // record.createAt = new Date().toISOString();
 
-  c.ctatus(201);
-  c.header('Location', '/api/pokemons/${id}');
+  // c.ctatus(201);
+  // c.header('Location', '/api/pokemons/${id}');
 
-  await kv.set(['pokemons', id], record);
+  // await kv.set(['pokemons', id], record);
 
   return c.json({ path: c.req.path });
 });
 
 /*** リソースの取得（レコード単体） ***/
 app.get('/api/pokemons/:id', async (c) => {
-  return c.json({ path: c.req.path });
+
+const id = Number(c.req.param('id'));
+  const pkmn = await kv.get(['pokemons', id]);
+  if (pkmn.value) {
+    return c.json(pkmn.value);
+  }
+  else {
+    c.status(404); // 404 Not Found
+    return c.json({ message: `IDが ${id} のポケモンはいませんでした。` });
+  }
 });
 
 /*** リソースの取得（コレクション） ***/
